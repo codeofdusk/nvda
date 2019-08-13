@@ -194,7 +194,7 @@ class consoleUIATextInfo(UIATextInfo):
 	def _get_isCollapsed(self):
 		# To decide if the textRange is collapsed,
 		# Check if it has no text.
-		return self._isCollapsed
+		return self._isCollapsed()
 
 	def _getCurrentOffsetInThisLine(self, lineInfo):
 		"""
