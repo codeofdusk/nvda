@@ -2321,7 +2321,7 @@ class AdvancedPanelControls(wx.Panel):
 		self.consoleCombo = UIAGroup.addLabeledControl(consoleComboText, wx.Choice, choices=consoleChoices)
 		self.consoleCombo.Bind(
 			wx.EVT_CHOICE,
-			self.enableConsolePasswordsCheckBox,
+			self.enableTerminalCheckBoxes,
 			self.consoleCombo
 		)
 		curChoice = self.consoleVals.index(
@@ -2346,14 +2346,13 @@ class AdvancedPanelControls(wx.Panel):
 		self.speakPasswordsCheckBox = terminalsGroup.addItem(wx.CheckBox(self, label=label))
 		self.speakPasswordsCheckBox.SetValue(config.conf["terminals"]["speakPasswords"])
 		self.speakPasswordsCheckBox.defaultValue = self._getDefaultValue(["terminals", "speakPasswords"])
-		self.enableConsolePasswordsCheckBox()
 		# Translators: This is the label for a checkbox in the
 		#  Advanced settings panel.
 		label = _("Use the new t&yped character support in legacy Windows consoles when available")
 		self.keyboardSupportInLegacyCheckBox=terminalsGroup.addItem(wx.CheckBox(self, label=label))
 		self.keyboardSupportInLegacyCheckBox.SetValue(config.conf["terminals"]["keyboardSupportInLegacy"])
 		self.keyboardSupportInLegacyCheckBox.defaultValue = self._getDefaultValue(["terminals", "keyboardSupportInLegacy"])
-		self.keyboardSupportInLegacyCheckBox.Enable(winVersion.isWin10(1607))
+		self.enableTerminalCheckBoxes()
 
 		# Translators: This is the label for a group of advanced options in the
 		#  Advanced settings panel
@@ -2430,12 +2429,13 @@ class AdvancedPanelControls(wx.Panel):
 		]
 		self.Layout()
 
-	def enableConsolePasswordsCheckBox(self, evt=None):
-		return self.speakPasswordsCheckBox.Enable(
-			shouldUseUIAConsole(self.consoleVals[
-				self.consoleCombo.GetSelection()
-			])
-		)
+	def enableTerminalCheckBoxes(self, evt=None):
+		UIAEnabled = shouldUseUIAConsole(self.consoleVals[
+			self.consoleCombo.GetSelection()
+		])
+		self.speakPasswordsCheckBox.Enable(UIAEnabled)
+		self.keyboardSupportInLegacyCheckBox.Enable(not UIAEnabled and winVersion.isWin10(1607))
+
 
 	def onOpenScratchpadDir(self,evt):
 		path=config.getScratchpadDir(ensureExists=True)
@@ -2446,16 +2446,19 @@ class AdvancedPanelControls(wx.Panel):
 
 	def haveConfigDefaultsBeenRestored(self):
 		return (
-			self._defaultsRestored and
-			self.scratchpadCheckBox.IsChecked() == self.scratchpadCheckBox.defaultValue and
-			self.UIAInMSWordCheckBox.IsChecked() == self.UIAInMSWordCheckBox.defaultValue and
-			self.consoleCombo.GetSelection() == self.consoleCombo.defaultValue and
-			self.speakPasswordsCheckBox.IsChecked() == self.speakPasswordsCheckBox.defaultValue and
-			self.keyboardSupportInLegacyCheckBox.IsChecked() == self.keyboardSupportInLegacyCheckBox.defaultValue and
-			self.autoFocusFocusableElementsCheckBox.IsChecked() == self.autoFocusFocusableElementsCheckBox.defaultValue and
-			self.caretMoveTimeoutSpinControl.GetValue() == self.caretMoveTimeoutSpinControl.defaultValue and
-			set(self.logCategoriesList.CheckedItems) == set(self.logCategoriesList.defaultCheckedItems) and
-			True  # reduce noise in diff when the list is extended.
+			self._defaultsRestored
+			and self.scratchpadCheckBox.IsChecked() == self.scratchpadCheckBox.defaultValue
+			and self.UIAInMSWordCheckBox.IsChecked() == self.UIAInMSWordCheckBox.defaultValue
+			and self.consoleCombo.GetSelection() == self.consoleCombo.defaultValue
+			and self.speakPasswordsCheckBox.IsChecked() == self.speakPasswordsCheckBox.defaultValue
+			and self.keyboardSupportInLegacyCheckBox.IsChecked() == self.keyboardSupportInLegacyCheckBox.defaultValue
+			and (
+				self.autoFocusFocusableElementsCheckBox.IsChecked()
+				== self.autoFocusFocusableElementsCheckBox.defaultValue
+			)
+			and self.caretMoveTimeoutSpinControl.GetValue() == self.caretMoveTimeoutSpinControl.defaultValue
+			and set(self.logCategoriesList.CheckedItems) == set(self.logCategoriesList.defaultCheckedItems)
+			and True  # reduce noise in diff when the list is extended.
 		)
 
 	def restoreToDefaults(self):
