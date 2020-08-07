@@ -39,6 +39,7 @@ WIN10_VERSIONS_TO_BUILDS = {
 	1909: 18363,
 	2004: 19041,
 	2009: 19042,
+	2103: 20241  # Update this once stable
 }
 
 
