@@ -591,6 +591,14 @@ def main():
 	_terminate(speech)
 	_terminate(addonHandler)
 	_terminate(garbageHandler)
+	# DMP is only started if needed.
+	# Terminate manually (and let it write to the log if necessary)
+	# as core._terminate always writes an entry.
+	try:
+		import diffHandler
+		diffHandler.dmp._terminate()
+	except Exception:
+		log.debug("Exception while terminating DMP", exc_info=True)
 
 	if not globalVars.appArgs.minimal and config.conf["general"]["playStartAndExitSounds"]:
 		try:
