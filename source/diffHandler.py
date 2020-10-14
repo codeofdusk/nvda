@@ -3,6 +3,7 @@
 # See the file COPYING for more details.
 # Copyright (C) 2020 Bill Dengler
 
+import config
 import globalVars
 import os
 import struct
@@ -39,6 +40,7 @@ class DiffMatchPatch(DiffAlgo):
 	_lock = Lock()
 
 	def _initialize(self):
+		"Start the nvda_dmp process if it is not already running."
 		if not DiffMatchPatch._proc:
 			log.debug("Starting diff-match-patch proxy")
 			if hasattr(sys, "frozen"):
@@ -98,14 +100,12 @@ class DiffMatchPatch(DiffAlgo):
 	def _terminate(self):
 		if DiffMatchPatch._proc:
 			log.debug("Terminating diff-match-patch proxy")
-			DiffMatchPatch._proc.stdin.write(struct.pack("=II", 0, 0))  # Sentinal value
+			# nvda_dmp exits when it receives two zero-length texts.
+			DiffMatchPatch._proc.stdin.write(struct.pack("=II", 0, 0))
 
 
 class Difflib(DiffAlgo):
-	(
-		"A line-based diffing approach in pure Python, using the Python "
-		"standard library."
-	)
+	"A line-based diffing approach in pure Python, using the Python standard library."
 
 	def diff(self, newText: str, oldText: str) -> List[str]:
 		newLines = newText.splitlines()
@@ -164,6 +164,25 @@ class Difflib(DiffAlgo):
 
 	def _getText(self, ti: TextInfo) -> str:
 		return "\n".join(ti.getTextInChunks(UNIT_LINE))
+
+
+def get_dmp_algo():
+	"""
+		This property controls which diff algorithm is used. The default
+		implementation returns either diffHandler.dmp or diffHandler.difflib
+		based on user preference. Subclasses can override this property to
+		choose a diffAlgo object (overriding user preference)
+		if one is incompatible with a particular application.
+		As of NVDA 2020.4, diffHandler.dmp is experimental. Therefore,
+		subclasses should either use the base implementation to check the
+		user config, or return diffHandler.difflib
+		to forcibly use Difflib.
+	"""
+	return (
+		dmp
+		if config.conf["terminals"]["diffAlgo"] == "dmp"
+		else difflib
+	)
 
 
 difflib = Difflib()
