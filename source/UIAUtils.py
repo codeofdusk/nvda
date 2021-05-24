@@ -297,9 +297,7 @@ def _shouldUseUIAConsole(hwnd: int) -> bool:
 	else:
 		# #7497: the UIA implementation in old conhost is incomplete, therefore we
 		# should ignore it.
-		# When the UIA implementation is improved, the below line will be replaced
-		# with a call to _isImprovedConhostTextRangeAvailable.
-		return False
+		return _isImprovedConhostTextRangeAvailable(hwnd)
 
 
 @lru_cache(maxsize=10)
