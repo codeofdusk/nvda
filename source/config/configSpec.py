@@ -231,7 +231,7 @@ schemaVersion = integer(min=0, default={latestSchemaVersion})
 	reportDetails = boolean(default=false)
 
 [terminals]
-	speakPasswords = boolean(default=false)
+	speakPasswords = boolean(default=true)
 	keyboardSupportInLegacy = boolean(default=True)
 	diffAlgo = option("auto", "dmp", "difflib", default="auto")
 
