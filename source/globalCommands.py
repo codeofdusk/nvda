@@ -21,6 +21,7 @@ import textInfos
 import speech
 from speech import sayAll
 from NVDAObjects import NVDAObject, NVDAObjectTextInfo
+from NVDAObjects.UIA import UIATextInfo
 import globalVars
 from logHandler import log
 import gui
@@ -1345,6 +1346,28 @@ class GlobalCommands(ScriptableObject):
 		speech.speakTextInfo(info, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
 
 	@script(
+		# Translators: Input help mode message for move review cursor to top line command.
+		description=_(
+			"Moves the review cursor to the first visible line of the current navigator object and speaks it"
+		),
+		category=SCRCAT_TEXTREVIEW,
+		gestures=("kb:shift+alt+numpad7", "kb(laptop):NVDA+control+alt+home")
+	)
+	def script_review_top_visible(self, gesture):
+		pos = api.getReviewPosition()
+		if not isinstance(pos, UIATextInfo):
+			return ui.reviewMessage(
+				# Translators: Reported when the current object does not support movement to the first/last visible line.
+				_("Not supported")
+			)
+		visiRange = pos.obj.UIATextPattern.GetVisibleRanges().GetElement(0)
+		info = UIATextInfo(pos.obj, textInfos.POSITION_FIRST, _rangeObj=visiRange)
+		info.collapse()
+		api.setReviewPosition(info)
+		info.expand(textInfos.UNIT_LINE)
+		speech.speakTextInfo(info, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
+
+	@script(
 		# Translators: Input help mode message for move review cursor to previous line command.
 		description=_("Moves the review cursor to the previous line of the current navigator object and speaks it"),
 		resumeSayAllMode=sayAll.CURSOR.REVIEW,
@@ -1418,6 +1441,27 @@ class GlobalCommands(ScriptableObject):
 	)
 	def script_review_bottom(self,gesture):
 		info=api.getReviewPosition().obj.makeTextInfo(textInfos.POSITION_LAST)
+		api.setReviewPosition(info)
+		info.collapse(True)
+		info.expand(textInfos.UNIT_LINE)
+		speech.speakTextInfo(info, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
+
+	@script(
+		# Translators: Input help mode message for move review cursor to top line command.
+		description=_(
+			"Moves the review cursor to the last visible line of the current navigator object and speaks it"
+		),
+		category=SCRCAT_TEXTREVIEW,
+		gestures=("kb:shift+alt+numpad9", "kb(laptop):NVDA+control+alt+end")
+	)
+	def script_review_bottom_visible(self, gesture):
+		pos = api.getReviewPosition()
+		if not isinstance(pos, UIATextInfo):
+			return ui.reviewMessage(_("Not supported"))
+		visiRanges = pos.obj.UIATextPattern.GetVisibleRanges()
+		visiRange = visiRanges.GetElement(visiRanges.length - 1)
+		info = UIATextInfo(pos.obj, textInfos.POSITION_LAST, _rangeObj=visiRange)
+		info.collapse(True)
 		api.setReviewPosition(info)
 		info.expand(textInfos.UNIT_LINE)
 		speech.speakTextInfo(info, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
