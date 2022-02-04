@@ -326,6 +326,16 @@ def _getConhostAPILevel(hwnd: int) -> WinConsoleAPILevel:
 		textArea = UIAElement.buildUpdatedCache(
 			textAreaCacheRequest
 		).getCachedChildren().GetElement(0)
+		if (
+			textArea.getCurrentPropertyValueEx(
+				UIAHandler.UIA.UIA_LiveSettingPropertyId,
+				False
+			)
+			== UIAHandler.UIA.Polite
+		):
+			# microsoft/terminal#12358: modern consoles send UIA notification
+			# events for new text.
+			return WinConsoleAPILevel.NOTIFYING
 		UIATextPattern = textArea.GetCurrentPattern(
 			UIAHandler.UIA_TextPatternId
 		).QueryInterface(UIAHandler.IUIAutomationTextPattern)

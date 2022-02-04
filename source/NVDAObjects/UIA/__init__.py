@@ -1157,7 +1157,7 @@ class UIA(Window):
 			# so it is no longer necessary to diff the object as with all
 			# previous terminal implementations.
 			from . import winConsoleUIA
-			clsList.append(winConsoleUIA.WinTerminalUIA)
+			clsList.append(winConsoleUIA.NotifyingTerminal)
 
 		# Add editableText support if UIA supports a text pattern
 		if self.TextInfo==UIATextInfo:

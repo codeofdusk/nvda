@@ -82,3 +82,6 @@ class WinConsoleAPILevel(enum.IntEnum):
 	# Represents an IMPROVED console that exposes text formatting and a
 	# buffer that does not contain extraneous empty lines.
 	FORMATTED = 2
+	# Represents a console that sends UIA notification events for new text,
+	# making NVDAObjects.behaviors.LiveText unnecessary.
+	NOTIFYING = 3
