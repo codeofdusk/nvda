@@ -12,10 +12,10 @@ import textInfos
 import textUtils
 import UIAHandler
 
-from collections import deque
 from comtypes import COMError
 from diffHandler import prefer_difflib
 from logHandler import log
+from os.path import commonprefix
 from scriptHandler import script
 from UIAHandler.utils import _getConhostAPILevel
 from UIAHandler.constants import WinConsoleAPILevel
@@ -335,48 +335,34 @@ class NotifyingTerminal(EditableText, UIA):
 	role = controlTypes.Role.TERMINAL
 	#: A queue of typed characters, to be dispatched on relevant notification.
 	#: This allows NVDA to suppress typed passwords when needed.
-	_queuedChars = deque()
+	_queuedChars = []
 
 	def _get_caretMovementDetectionUsesEvents(self):
 		"""Using caret events in consoles sometimes causes the last character of the
 		prompt to be read when quickly deleting text."""
 		return False
 
-	def _dispatchQueue(self):
-		"""Sends queued typedCharacter events through to NVDA."""
-		while self._queuedChars:
-			ch = self._queuedChars.popleft()
-			super().event_typedCharacter(ch)
+	def _shouldDeferChars(self):
+		return not config.conf['terminals']['speakPasswords']
 
 	def event_typedCharacter(self, ch):
-		if not config.conf['terminals']['speakPasswords']:  # todo handle output filtering when speak passwds
-			self._queuedChars.append(ch)
-		else:
-			super().event_typedCharacter(ch)
+		if not ch.isprintable():
+			return super().event_typedCharacter(ch)
+		self._queuedChars.append(ch)
+		if not self._shouldDeferChars():
+			return super().event_typedCharacter(ch)
 
 	def event_UIA_notification(self, displayString=None, *args, **kwargs):
-		if self._queuedChars and (displayString is None or len(displayString) < 2):  # todo race condition
-			# This notification was probably sent for a typed character.
-			return self._dispatchQueue()
-		return super().event_UIA_notification(displayString=displayString, *args, **kwargs)
-
-	@script(gestures=[
-		"kb:enter",
-		"kb:numpadEnter",
-		"kb:tab",
-		"kb:control+c",
-		"kb:control+d",
-		"kb:control+pause"
-	])
-	def script_flush_queuedChars(self, gesture):
-		"""
-		Flushes the typed word buffer and queue of typedCharacter events if present.
-		Since these gestures clear the current word/line, we should flush the
-		queue to avoid erroneously reporting these chars.
-		"""
-		self._queuedChars.clear()
-		speech.clearTypedWordBuffer()
-		gesture.send()
+		prefix = commonprefix((''.join(self._queuedChars), displayString))
+		log.info(f"Queued chars {repr(self._queuedChars)}, displayString: {repr(displayString)}, prefix: {repr(prefix)}")
+		self._queuedChars = []
+		if prefix:
+			if self._shouldDeferChars():
+				for ch in prefix:
+					super().event_typedCharacter(ch)
+			displayString = displayString[len(prefix):]  # Filter out typed chars
+			if displayString:
+				return super().event_UIA_notification(displayString=displayString, *args, **kwargs)
 
 
 class consoleUIAWindow(Window):
