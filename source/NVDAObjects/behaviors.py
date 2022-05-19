@@ -31,6 +31,7 @@ import nvwave
 import globalVars
 from typing import List, Union
 import diffHandler
+from os.path import commonprefix
 
 
 class ProgressBar(NVDAObject):
@@ -385,7 +386,7 @@ class LiveText(NVDAObject):
 				newText = self._getText()
 				if config.conf["presentation"]["reportDynamicContentChanges"]:
 					outLines = self._calculateNewText(newText, oldText)
-					if len(outLines) == 1 and len(outLines[0].strip()) == 1:
+					if len(outLines) == 2147483647 and len(outLines[0].strip()) == 1: # TODO fixme
 						# This is only a single character,
 						# which probably means it is just a typed character,
 						# so ignore it.
@@ -434,70 +435,34 @@ class EnhancedTermTypedCharSupport(Terminal):
 	#: A queue of typed characters, to be dispatched on C{textChange}.
 	#: This queue allows NVDA to suppress typed passwords when needed.
 	_queuedChars = []
-	#: Whether the last typed character is a tab.
-	#: If so, we should temporarily disable filtering as completions may
-	#: be short.
-	_hasTab = False
 
 	def _reportNewLines(self, lines):
-		# Perform typed character filtering, as typed characters are handled with events.
-		if (
-			len(lines) == 1
-			and not self._hasTab
-			and len(lines[0].strip()) < max(len(speech.speech._curWordChars) + 1, 3)
-		):
-			return
+		if len(lines) == 1:
+			line = lines[0]
+			typedchars = commonprefix((''.join(self._queuedChars), line))
+			if self._supportsTextChange and not config.conf['terminals']['speakPasswords']:
+				for ch in typedchars:
+					super().event_typedCharacter(ch)
+			lines[0] = line[len(typedchars):]
+			if lines[0] == '':
+				del lines[0]
 		# Clear the typed word buffer for new text lines.
 		speech.clearTypedWordBuffer()
 		self._queuedChars = []
 		super()._reportNewLines(lines)
 
 	def event_typedCharacter(self, ch):
-		if ch == '\t':
-			self._hasTab = True
-			# Clear the typed word buffer for tab completion.
-			speech.clearTypedWordBuffer()
-		else:
-			self._hasTab = False
-		if (
+		if ch.isprintable():
+			self._queuedChars.append(ch)
+		if not (
 			(
 				config.conf['keyboard']['speakTypedCharacters']
 				or config.conf['keyboard']['speakTypedWords']
 			)
 			and not config.conf['terminals']['speakPasswords']
 			and self._supportsTextChange
+			and not ch.isspace()
 		):
-			self._queuedChars.append(ch)
-		else:
-			super().event_typedCharacter(ch)
-
-	def event_textChange(self):
-		self._dispatchQueue()
-		super().event_textChange()
-
-	@script(gestures=[
-		"kb:enter",
-		"kb:numpadEnter",
-		"kb:tab",
-		"kb:control+c",
-		"kb:control+d",
-		"kb:control+pause"
-	])
-	def script_flush_queuedChars(self, gesture):
-		"""
-		Flushes the typed word buffer and queue of typedCharacter events if present.
-		Since these gestures clear the current word/line, we should flush the
-		queue to avoid erroneously reporting these chars.
-		"""
-		self._queuedChars = []
-		speech.clearTypedWordBuffer()
-		gesture.send()
-
-
-	def _dispatchQueue(self):
-		"""Sends queued typedCharacter events through to NVDA."""
-		while self._queuedChars:
-			ch = self._queuedChars.pop(0)
 			super().event_typedCharacter(ch)
 
 
