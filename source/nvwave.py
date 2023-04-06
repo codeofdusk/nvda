@@ -44,6 +44,7 @@ import garbageHandler
 import winKernel
 import wave
 import config
+from config.featureFlagEnums import AudioOutputMethodFlag
 from logHandler import log
 import os.path
 import extensionPoints
@@ -957,7 +958,7 @@ class WasapiWavePlayer(garbageHandler.TrackedObject):
 
 def initialize():
 	global WavePlayer
-	if not config.conf["audio"]["wasapi"]:
+	if config.conf["audio"]["outputMethod"] == AudioOutputMethodFlag.WINMM:
 		return
 	WavePlayer = WasapiWavePlayer
 	NVDAHelper.localLib.wasPlay_create.restype = c_void_p

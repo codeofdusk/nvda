@@ -3016,22 +3016,19 @@ class AdvancedPanelControls(
 		# Advanced settings panel
 		label = _("Audio")
 		audio = wx.StaticBoxSizer(wx.VERTICAL, self, label=label)
-		audioBox = audio.GetStaticBox()
 		audioGroup = guiHelper.BoxSizerHelper(self, sizer=audio)
 		sHelper.addItem(audioGroup)
 
-		# Translators: This is the label for a checkbox control in the
-		#  Advanced settings panel.
-		label = _("Use WASAPI for audio output (requires restart)")
-		self.wasapiCheckBox: wx.CheckBox = audioGroup.addItem(
-			wx.CheckBox(audioBox, label=label)
+		self.audioOutputMethodCombo: nvdaControls.FeatureFlagCombo = audioGroup.addLabeledControl(
+			labelText=_(
+				# Translators: This is the label for a combo-box in the Advanced settings panel.
+				"Output method (requires restart):"
+			),
+			wxCtrlClass=nvdaControls.FeatureFlagCombo,
+			keyPath=["audio", "outputMethod"],
+			conf=config.conf,
 		)
-		self.bindHelpEvent("WASAPI", self.wasapiCheckBox)
-		self.wasapiCheckBox.SetValue(
-			config.conf["audio"]["wasapi"]
-		)
-		self.wasapiCheckBox.defaultValue = self._getDefaultValue(
-			["audio", "wasapi"])
+		self.bindHelpEvent("wasapi", self.audioOutputMethodCombo)
 
 		# Translators: This is the label for a group of advanced options in the
 		# Advanced settings panel
@@ -3120,7 +3117,7 @@ class AdvancedPanelControls(
 			and self.loadChromeVBufWhenBusyCombo.isValueConfigSpecDefault()
 			and self.caretMoveTimeoutSpinControl.GetValue() == self.caretMoveTimeoutSpinControl.defaultValue
 			and self.reportTransparentColorCheckBox.GetValue() == self.reportTransparentColorCheckBox.defaultValue
-			and self.wasapiCheckBox.GetValue() == self.wasapiCheckBox.defaultValue
+			and self.audioOutputMethodCombo.isValueConfigSpecDefault()
 			and set(self.logCategoriesList.CheckedItems) == set(self.logCategoriesList.defaultCheckedItems)
 			and self.playErrorSoundCombo.GetSelection() == self.playErrorSoundCombo.defaultValue
 			and True  # reduce noise in diff when the list is extended.
@@ -3146,7 +3143,7 @@ class AdvancedPanelControls(
 		self.loadChromeVBufWhenBusyCombo.resetToConfigSpecDefault()
 		self.caretMoveTimeoutSpinControl.SetValue(self.caretMoveTimeoutSpinControl.defaultValue)
 		self.reportTransparentColorCheckBox.SetValue(self.reportTransparentColorCheckBox.defaultValue)
-		self.wasapiCheckBox.SetValue(self.wasapiCheckBox.defaultValue)
+		self.audioOutputMethodCombo.resetToConfigSpecDefault()
 		self.logCategoriesList.CheckedItems = self.logCategoriesList.defaultCheckedItems
 		self.playErrorSoundCombo.SetSelection(self.playErrorSoundCombo.defaultValue)
 		self._defaultsRestored = True
@@ -3177,7 +3174,7 @@ class AdvancedPanelControls(
 		config.conf["documentFormatting"]["reportTransparentColor"] = (
 			self.reportTransparentColorCheckBox.IsChecked()
 		)
-		config.conf["audio"]["wasapi"] = self.wasapiCheckBox.IsChecked()
+		self.audioOutputMethodCombo.saveCurrentValueToConf()
 		config.conf["annotations"]["reportDetails"] = self.annotationsDetailsCheckBox.IsChecked()
 		config.conf["annotations"]["reportAriaDescription"] = self.ariaDescCheckBox.IsChecked()
 		config.conf["braille"]["enableHidBrailleSupport"] = self.supportHidBrailleCombo.GetSelection()

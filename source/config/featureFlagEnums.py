@@ -105,6 +105,25 @@ class WindowsTerminalStrategyFlag(DisplayStringEnum):
 	NOTIFICATIONS = enum.auto()
 
 
+class AudioOutputMethodFlag(DisplayStringEnum):
+	"""
+	A feature flag for defining which system API NVDA uses for audio output.
+	"""
+
+	@property
+	def _displayStringLabels(self):
+		return {
+			# Translators: Label for an option in NVDA settings.
+			self.WASAPI: _("Windows Audio Session API"),
+			# Translators: Label for an option in NVDA settings.
+			self.WINMM: _("Legacy Windows Multimedia API"),
+		}
+
+	DEFAULT = enum.auto()
+	WASAPI = enum.auto()
+	WINMM = enum.auto()
+
+
 def getAvailableEnums() -> typing.Generator[typing.Tuple[str, FlagValueEnum], None, None]:
 	for name, value in globals().items():
 		if (
