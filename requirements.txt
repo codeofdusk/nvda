@@ -5,6 +5,7 @@ SCons==4.3.0
 comtypes==1.2.0
 pyserial==3.5
 wxPython==4.1.1
+pillow==9.5.0
 git+https://github.com/DiffSK/configobj@3e2f4cc#egg=configobj
 requests==2.31.0
 # Required to use a pinned old version for requests.

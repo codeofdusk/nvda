@@ -4,10 +4,6 @@
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
-# Needed for type hinting CaseInsensitiveDict, UserDict
-# Can be removed in a future version of python (3.8+)
-from __future__ import annotations
-
 from abc import abstractmethod, ABC
 import sys
 import os.path
@@ -91,12 +87,12 @@ class AddonsState(collections.UserDict):
 	"""
 
 	@staticmethod
-	def _generateDefaultStateContent() -> Dict[AddonStateCategory, CaseInsensitiveSet[str]]:
+	def _generateDefaultStateContent():
 		return {
 			category: CaseInsensitiveSet() for category in AddonStateCategory
 		}
 
-	data: Dict[AddonStateCategory, CaseInsensitiveSet[str]]
+	data: Dict
 	manualOverridesAPIVersion: MajorMinorPatch
 
 	@property
@@ -216,7 +212,7 @@ class AddonsState(collections.UserDict):
 				self[AddonStateCategory.OVERRIDE_COMPATIBILITY].discard(blockedAddon)
 
 
-state: AddonsState[AddonStateCategory, CaseInsensitiveSet[str]] = AddonsState()
+state: AddonsState = AddonsState()
 
 
 def getRunningAddons() -> "AddonHandlerModelGeneratorT":
@@ -754,8 +750,8 @@ def initTranslation():
 	try:
 		callerFrame = inspect.currentframe().f_back
 		callerFrame.f_globals['_'] = translations.gettext
-		# Install our pgettext function.
-		callerFrame.f_globals['pgettext'] = languageHandler.makePgettext(translations)
+		# Install pgettext function.
+		callerFrame.f_globals['pgettext'] = translations.pgettext
 	finally:
 		del callerFrame # Avoid reference problems with frames (per python docs)
 
