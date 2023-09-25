@@ -8,17 +8,17 @@ from typing import Optional, Any, Callable, Tuple, Union
 
 _FloatInt = Union[int, float]
 _Size = Union[Tuple[_FloatInt, _FloatInt], _FloatInt]
-_ScaledSize = Union[Tuple[float, float], float]
+_ScaledSize = Union[Tuple[int, int], int]
 
 
 def scaleSize(scaleFactor: float, size: _Size) -> _ScaledSize:
 	"""Helper method to scale a size using the logical DPI
 	@param size: The size (x, y) as a tuple or a single numerical type to scale
-	@returns: The scaled size, as a float or tuple of floats.
+	@returns: The scaled size, as an int or tuple of ints.
 	"""
 	if isinstance(size, tuple):
-		return (scaleFactor * size[0], scaleFactor * size[1])
-	return scaleFactor * size
+		return (round(scaleFactor * size[0]), round(scaleFactor * size[1]))
+	return round(scaleFactor * size)
 
 
 def getScaleFactor(windowHandle: int) -> float:

@@ -4,21 +4,16 @@ SCons==4.3.0
 # NVDA's runtime dependencies
 comtypes==1.2.0
 pyserial==3.5
-wxPython==4.1.1
+wxPython==4.2.1
 pillow==9.5.0
 git+https://github.com/DiffSK/configobj@3e2f4cc#egg=configobj
 requests==2.31.0
-# Required to use a pinned old version for requests.
-# py2exe fails to compile properly without this.
-# This can be removed when upgrading py2exe to 0.13+ and python to 3.8+.
-# https://github.com/Ousret/charset_normalizer/issues/253
-charset-normalizer==2.1.1
 
 #NVDA_DMP requires diff-match-patch
 fast_diff_match_patch==2.0.1
 
 # Packaging NVDA
-py2exe==0.11.1.0
+py2exe==0.13.0.0
 
 # For building developer documentation
 sphinx==5.1.1
