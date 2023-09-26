@@ -9,10 +9,7 @@ import sys
 import copy
 import gettext
 gettext.install("nvda")
-from setuptools import setup
-# While the import of py2exe appears unused it is required.
-# py2exe monkey patches distutils when importing py2exe for the first time.
-import py2exe as py2exeModule  # noqa: F401, E402
+from py2exe import freeze
 from glob import glob
 import fnmatch
 # versionInfo names must be imported after Gettext
@@ -110,23 +107,8 @@ def getRecursiveDataFiles(dest,source,excludes=()):
 	[rulesList.extend(getRecursiveDataFiles(os.path.join(dest,dirName),os.path.join(source,dirName),excludes=excludes)) for dirName in os.listdir(source) if os.path.isdir(os.path.join(source,dirName)) and not dirName.startswith('.')]
 	return rulesList
 
-setup(
-	name = name,
-	version=version,
-	description=description,
-	url=url,
-	classifiers=[
-'Development Status :: 3 - Alpha',
-'Environment :: Win32 (MS Windows)',
-'Topic :: Adaptive Technologies'
-'Intended Audience :: Developers',
-'Intended Audience :: End Users/Desktop',
-'License :: OSI Approved :: GNU General Public License (GPL)',
-'Natural Language :: English',
-'Programming Language :: Python',
-'Operating System :: Microsoft :: Windows',
-],
-	cmdclass={"py2exe": py2exe},
+freeze(
+	#cmdclass={"py2exe": py2exe},
 	windows=[
 		{
 			"script":"nvda.pyw",
@@ -182,7 +164,7 @@ setup(
 			"company_name": f"Bill Dengler, {publisher}",
 		},
 	],
-	options = {"py2exe": {
+	options = {
 		"bundle_files": 3,
 		"excludes": [
 			"tkinter",
@@ -230,7 +212,7 @@ setup(
 			# robotremoteserver (for system tests) depends on xmlrpc.server
 			"xmlrpc.server",
 		],
-	}},
+	},
 	data_files=[
 		(".",glob("*.dll")+glob("*.manifest")+["builtin.dic"]),
 		("documentation", ['../copying.txt', '../contributors.txt']),
@@ -265,4 +247,8 @@ setup(
 		))
 		+ getRecursiveDataFiles('documentation', '../user_docs', excludes=('*.t2t', '*.t2tconf', '*/developerGuide.*'))
 	),
+	#version_info = {
+	#	version: formatBuildVersionString(),
+	#	description: description,
+	#},
 )
