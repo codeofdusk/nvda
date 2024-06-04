@@ -3,7 +3,7 @@
 ## 2024.3
 
 This release adds support for Unicode Normalization to speech and braille output.
-This can be useful when reading characters that are unknown to a particular speech synthesizer or braille table and which have a compatible alternative, like the bold and italic characters commonly uses on social media.
+This can be useful when reading characters that are unknown to a particular speech synthesizer or braille table and which have a compatible alternative, like the bold and italic characters commonly used on social media.
 It also allows reading of equations in the Microsoft Word equation editor.
 You can enable this functionality for both speech and braille in their respective settings categories in the NVDA Settings dialog.
 
@@ -26,7 +26,7 @@ Unicode CLDR and Liblouis have been updated.
   * Updated Unicode CLDR to version 45.0. (#16507, @OzancanKaratas)
   * Updated fast_diff_match_patch (used to detect changes in terminals and other dynamic content) to version 2.1.0. (#16508, @codeofdusk)
   * Updated LibLouis Braille translator to [3.30.0](https://github.com/liblouis/liblouis/releases/tag/v3.30.0). (#16652, @codeofdusk)
-    * New Braille tables for Cyrillic Serbian, Yiddish, several ancient languages (Biblical Hebrew, Akkadian, Syriac, and Ugaritic), and translated Cuneiform text.
+    * New Braille tables for Cyrillic Serbian, Yiddish, several ancient languages (Biblical Hebrew, Akkadian, Syriac, and Ugaritic), and transliterated Cuneiform text.
 * The fallback braille input table is now equal to the fallback output table, which is Unified English Braille Code grade 1. (#9863, @JulienCochuyt, @LeonarddeR)
 * NVDA will now report figures with no accessible children, but with a label or description. (#14514)
 * When reading by line in browse mode, "caption" is no longer reported on each line of a long figure or table caption. (#14874)
