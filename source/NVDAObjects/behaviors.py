@@ -383,9 +383,9 @@ class LiveText(NVDAObject):
 	# If the text is live, this is definitely content.
 	presentationType = NVDAObject.presType_content
 
-	MAX_LINES: int = 100
-	"""The maximum number of lines that will be reported when a large number of lines are queued.
-	Subclasses may override this to allow custom line reporting batches.
+	MAX_DIFF_LINES: int = 0
+	"""The maximum number of trailing lines that will be diffed.
+	A value of 0 disables the limit.
 	"""
 	announceNewLineText = False
 
@@ -460,6 +460,12 @@ class LiveText(NVDAObject):
 		However, subclasses should override this if there is a better way to retrieve the text.
 		"""
 		ti = self.makeTextInfo(textInfos.POSITION_ALL)
+		if self.MAX_DIFF_LINES > 0:
+			start = ti.copy()
+			start.collapse(end=True)
+			if start.move(textInfos.UNIT_LINE, -self.MAX_DIFF_LINES):
+				start.expand(textInfos.UNIT_LINE)
+				ti.start = start.start
 		return self.diffAlgo._getText(ti)
 
 	def _reportNewLines(self, lines: list[str]) -> None:
@@ -468,9 +474,6 @@ class LiveText(NVDAObject):
 		Subclasses may override this method to provide custom filtering of new text,
 		where logic depends on multiple lines.
 		"""
-		droppedCount = len(lines) - self.MAX_LINES
-		if droppedCount > 0:
-			lines = lines[-self.MAX_LINES :]
 		if self._reportNewLinesGenID is not None:
 			queueHandler.cancelGeneratorObject(self._reportNewLinesGenID)
 			self._reportNewLinesGenID = None
@@ -545,6 +548,7 @@ class Terminal(LiveText, EditableText):
 	"""
 
 	role = controlTypes.Role.TERMINAL
+	MAX_DIFF_LINES: int = 100
 
 	def event_gainFocus(self):
 		super(Terminal, self).event_gainFocus()
