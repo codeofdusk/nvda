@@ -38,6 +38,8 @@
 * Added a "Native selection mode" option to NVDA's Browse Mode settings, disabled by default. (#15908)
   * When enabled, native selection mode is automatically turned on in browse mode documents which support it, such as in Mozilla Firefox and browsers based on Chromium 134 or newer.
   * Native selection mode can still be toggled per document with `NVDA+shift+f10`.
+* Added an experimental option to the Advanced category of NVDA's settings to receive and filter winEvents (used for Microsoft Active Accessibility) on a dedicated thread, outside of NVDA's main event loop.
+  This may keep NVDA more responsive when applications fire large numbers of events. (#20653, @codeofdusk)
 
 ### Changes
 
